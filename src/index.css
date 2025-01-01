@@ -1,3 +1,42 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+
+/* Define MentiDisplay font */
+@font-face {
+    font-family: 'MentiDisplay';
+    src: url('./assets/fonts/MentiDisplay-Regular.woff2') format('woff2');
+    font-weight: 400; /* Regular */
+    font-style: normal;
+  }
+  
+  @font-face {
+    font-family: 'MentiDisplay';
+    src: url('./assets/fonts/MentiDisplay-SemiBold.woff2') format('woff2');
+    font-weight: 600; /* SemiBold */
+    font-style: normal;
+  }
+  
+  /* Define MentiText font */
+  @font-face {
+    font-family: 'MentiText';
+    src: url('./assets/fonts/MentiText-Regular.woff2') format('woff2');
+    font-weight: 400; /* Regular */
+    font-style: normal;
+  }
+  
+  @font-face {
+    font-family: 'MentiText';
+    src: url('./assets/fonts/MentiText-SemiBold.woff2') format('woff2');
+    font-weight: 600; /* SemiBold */
+    font-style: normal;
+  }
+  
+  @font-face {
+    font-family: 'MentiText';
+    src: url('./assets/fonts/MentiText-Bold.woff2') format('woff2');
+    font-weight: 700; /* Bold */
+    font-style: normal;
+  }
+  
