@@ -22,7 +22,7 @@ const ProtectedRoute = ({ element }) => {
   }, []);
 
   if (!accessToken || !user) {
-    return <Navigate to="/login" />;
+    return <Navigate to="/signup" />;
   }
 
   return element;

@@ -2,7 +2,9 @@
 @tailwind components;
 @tailwind utilities;
 
-
+body {
+  @apply overflow-x-hidden;
+}
 /* Define MentiDisplay font */
 @font-face {
     font-family: 'MentiDisplay';

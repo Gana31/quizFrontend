@@ -6,19 +6,21 @@ import rootReducer from './Reducer/index.js';
 import { configureStore } from '@reduxjs/toolkit';
 import { Provider } from 'react-redux';
 import { BrowserRouter } from 'react-router-dom';
+import { ToastContainer } from 'react-toastify';
 
-// export const store = configureStore({
-//   reducer:rootReducer,
-// });
+export const store = configureStore({
+  reducer:rootReducer,
+});
 
 
 
 createRoot(document.getElementById('root')).render(
-  <StrictMode>
+  <Provider store = {store}>
     <BrowserRouter>
-  {/* <Provider store = {store}> */}
+  <StrictMode>
     <App />
+    <ToastContainer limit={1} />
+  </StrictMode>
     </BrowserRouter>
-  {/* </Provider> */}
-  </StrictMode>,
+  </Provider>
 )
