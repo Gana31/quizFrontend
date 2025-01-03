@@ -7,6 +7,7 @@ import NotFound from "./Component/NotFound"
 import Footer from "./Component/Common/Footer"
 import Quize from "./Pages/Quize/Quize"
 import ProtectedRoute from "./Component/Common/ProtectedRoutes"
+import About from "./Pages/About/About"
 
 
 
@@ -22,8 +23,8 @@ const {accessToken } = useSelector((state)=>state.auth)
           element={accessToken ? <Navigate to="/" /> : <SignupPage/>} 
         />
         <Route path="/" element={<HomePage />} />
-        {/* <Route path="/contact" element={<ContactPage />} />
-        <Route path="/about" element={<AboutPage />} /> */}
+        {/* <Route path="/contact" element={<ContactPage />} /> */}
+        <Route path="/about" element={<About/>} />
         <Route path="*" element={<NotFound />} />
 
        
