@@ -5,21 +5,24 @@ function QuestionForm({ onSubmit, onClose, editingQuestion }) {
   const [question, setQuestion] = useState('');
   const [options, setOptions] = useState(['', '', '', '']);
   const [correctAnswer, setCorrectAnswer] = useState('');
+  const [explanationLink, setExplanationLink] = useState(''); // New state for YouTube link
 
   useEffect(() => {
     if (editingQuestion) {
       setQuestion(editingQuestion.question);
       setOptions(editingQuestion.options);
       setCorrectAnswer(editingQuestion.correctAnswer);
+      setExplanationLink(editingQuestion.explanationLink || '');
     }
   }, [editingQuestion]);
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    onSubmit({ question, options, correctAnswer });
+    onSubmit({ question, options, correctAnswer, explanationLink });
     setQuestion('');
     setOptions(['', '', '', '']);
     setCorrectAnswer('');
+    setExplanationLink('');
   };
 
   const handleOptionChange = (index, value) => {
@@ -55,7 +58,7 @@ function QuestionForm({ onSubmit, onClose, editingQuestion }) {
               required
             />
           </div>
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             {options.map((option, index) => (
               <div key={index}>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -78,7 +81,7 @@ function QuestionForm({ onSubmit, onClose, editingQuestion }) {
             <select
               value={correctAnswer}
               onChange={(e) => setCorrectAnswer(e.target.value)}
-              className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="w-full sm:w-auto px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               required
             >
               <option value="">Select correct answer</option>
@@ -88,6 +91,18 @@ function QuestionForm({ onSubmit, onClose, editingQuestion }) {
                 </option>
               ))}
             </select>
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Explanation Link (YouTube)
+            </label>
+            <input
+              type="url"
+              value={explanationLink}
+              onChange={(e) => setExplanationLink(e.target.value)}
+              placeholder="https://www.youtube.com/..."
+              className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            />
           </div>
           <div className="flex justify-end gap-3 pt-4">
             <button
@@ -99,7 +114,7 @@ function QuestionForm({ onSubmit, onClose, editingQuestion }) {
             </button>
             <button
               type="submit"
-              className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+              className="px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg transition-colors"
             >
               {editingQuestion ? 'Update Question' : 'Add Question'}
             </button>
