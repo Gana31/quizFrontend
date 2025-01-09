@@ -4,19 +4,61 @@ import { FaTimes } from 'react-icons/fa';
 function QuizForm({ onSubmit, onClose, editingQuiz }) {
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
+  const [startTime, setStartTime] = useState('');
+  const [endTime, setEndTime] = useState('');
 
   useEffect(() => {
     if (editingQuiz) {
       setName(editingQuiz.name);
       setDescription(editingQuiz.description);
+      setStartTime(editingQuiz.startTime); // Assuming startTime is in a valid format
+      setEndTime(editingQuiz.endTime);     // Assuming endTime is in a valid format
     }
   }, [editingQuiz]);
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    onSubmit({ name, description });
+
+    if (new Date(startTime) >= new Date(endTime)) {
+      alert('End time must be greater than the start time.');
+      return;
+    }
+
+    const quizData = { name, description, startTime, endTime };
+
+    // Include id if editingQuiz is defined (edit mode)
+    if (editingQuiz && editingQuiz.id) {
+      quizData.id = editingQuiz._id;
+    }
+
+    onSubmit(quizData);
     setName('');
     setDescription('');
+    setStartTime('');
+    setEndTime('');
+  };
+
+  const minStartTime = new Date().toISOString().slice(0, 16); // Current date and time in "YYYY-MM-DDTHH:MM" format
+
+  const handleStartTimeChange = (e) => {
+    const newStartTime = e.target.value;
+    setStartTime(newStartTime);
+
+    // Automatically adjust end time if it's earlier than the new start time
+    if (new Date(endTime) < new Date(newStartTime)) {
+      setEndTime(newStartTime);
+    }
+  };
+
+  const getEndTimeMin = () => {
+    // Ensure end time is not earlier than start time
+    return startTime;
+  };
+
+  const getEndTimeMax = () => {
+    // Ensure end time is on the same day as start time
+    const startDate = startTime.split('T')[0]; // Extract date part
+    return `${startDate}T23:59`;
   };
 
   return (
@@ -55,6 +97,33 @@ function QuizForm({ onSubmit, onClose, editingQuiz }) {
               onChange={(e) => setDescription(e.target.value)}
               className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
               rows="3"
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Start Time
+            </label>
+            <input
+              type="datetime-local"
+              value={startTime}
+              onChange={handleStartTimeChange}
+              min={minStartTime}
+              className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+              required
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              End Time
+            </label>
+            <input
+              type="datetime-local"
+              value={endTime}
+              onChange={(e) => setEndTime(e.target.value)}
+              min={getEndTimeMin()}
+              max={getEndTimeMax()}
+              className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+              required
             />
           </div>
           <div className="flex justify-end gap-3 pt-4">

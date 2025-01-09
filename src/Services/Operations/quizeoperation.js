@@ -1,13 +1,14 @@
 import { toast } from "react-toastify";
 import apiClient from "../ApiConnector.js"; // Assuming apiClient is the Axios instance
 import { setLoading } from "../../Slices/authSlice";
+import { setQuizzes } from "../../Slices/quizSlice.js";
 
 // Add a quiz (Create)
 export function addQuiz(data, navigate) {
   return async (dispatch) => {
     dispatch(setLoading(true));
     try {
-      const response = await apiClient.post("/quiz", data);
+      const response = await apiClient.post("/createQuiz", data);
       if (response.data.success) {
         toast.success("Quiz added successfully");
         navigate("/quiz"); // Redirect to quiz page after adding a quiz
@@ -26,7 +27,7 @@ export function updateQuiz(quizId, data, navigate) {
   return async (dispatch) => {
     dispatch(setLoading(true));
     try {
-      const response = await apiClient.put(`/quiz/${quizId}`, data);
+      const response = await apiClient.put(`/updateQuiz/${quizId}`, data);
       if (response.data.success) {
         toast.success("Quiz updated successfully");
         navigate("/quiz"); // Redirect to quiz page after updating
@@ -45,7 +46,7 @@ export function deleteQuiz(quizId) {
   return async (dispatch) => {
     dispatch(setLoading(true));
     try {
-      const response = await apiClient.delete(`/quiz/${quizId}`);
+      const response = await apiClient.delete(`/deleteQuiz/${quizId}`);
       if (response.data.success) {
         toast.success("Quiz deleted successfully");
       } else {
@@ -62,10 +63,14 @@ export function deleteQuiz(quizId) {
 export function fetchQuizzes() {
   return async (dispatch) => {
     dispatch(setLoading(true));
+    // console.log("called")
     try {
-      const response = await apiClient.get("/quiz");
+      const response = await apiClient.get("/getUserPreviousQuizzes");
       if (response.data.success) {
-        return response.data.data; // Return the list of quizzes
+
+        // console.log(response.data.data)
+      
+        dispatch(setQuizzes(response.data.data));
       } else {
         toast.error(response.data.message);
       }
@@ -81,7 +86,8 @@ export function addTopic(quizId, data) {
   return async (dispatch) => {
     dispatch(setLoading(true));
     try {
-      const response = await apiClient.post(`/quiz/${quizId}/topic`, data);
+      data.quizId = quizId
+      const response = await apiClient.post(`/createTopic`, data);
       if (response.data.success) {
         toast.success("Topic added successfully");
       } else {
@@ -95,11 +101,12 @@ export function addTopic(quizId, data) {
 }
 
 // Update a topic
-export function updateTopic(quizId, topicId, data) {
+export function updateTopic(topicId, data) {
   return async (dispatch) => {
     dispatch(setLoading(true));
+    // console.log("called")
     try {
-      const response = await apiClient.put(`/quiz/${quizId}/topic/${topicId}`, data);
+      const response = await apiClient.put(`/updateTopic/${topicId}`, data);
       if (response.data.success) {
         toast.success("Topic updated successfully");
       } else {
@@ -113,11 +120,12 @@ export function updateTopic(quizId, topicId, data) {
 }
 
 // Delete a topic
-export function deleteTopic(quizId, topicId) {
+export function deleteTopic(topicId) {
   return async (dispatch) => {
     dispatch(setLoading(true));
     try {
-      const response = await apiClient.delete(`/quiz/${quizId}/topic/${topicId}`);
+  
+      const response = await apiClient.delete(`/deleteTopic/${topicId}`);
       if (response.data.success) {
         toast.success("Topic deleted successfully");
       } else {
@@ -131,11 +139,12 @@ export function deleteTopic(quizId, topicId) {
 }
 
 // Add a question to a topic
-export function addQuestion(quizId, topicId, data) {
+export function addQuestion(topicId, data) {
   return async (dispatch) => {
     dispatch(setLoading(true));
     try {
-      const response = await apiClient.post(`/quiz/${quizId}/topic/${topicId}/question`, data);
+      data.topicId = topicId
+      const response = await apiClient.post(`/createQuestion`, data);
       if (response.data.success) {
         toast.success("Question added successfully");
       } else {
@@ -149,11 +158,11 @@ export function addQuestion(quizId, topicId, data) {
 }
 
 // Update a question
-export function updateQuestion(quizId, topicId, questionId, data) {
+export function updateQuestion(questionId, data) {
   return async (dispatch) => {
     dispatch(setLoading(true));
     try {
-      const response = await apiClient.put(`/quiz/${quizId}/topic/${topicId}/question/${questionId}`, data);
+      const response = await apiClient.put(`/updateQuestion/${questionId}`, data);
       if (response.data.success) {
         toast.success("Question updated successfully");
       } else {
@@ -167,11 +176,12 @@ export function updateQuestion(quizId, topicId, questionId, data) {
 }
 
 // Delete a question
-export function deleteQuestion(quizId, topicId, questionId) {
+export function deleteQuestion(questionId) {
   return async (dispatch) => {
+
     dispatch(setLoading(true));
     try {
-      const response = await apiClient.delete(`/quiz/${quizId}/topic/${topicId}/question/${questionId}`);
+      const response = await apiClient.delete(`/deleteQuestion/${questionId}`);
       if (response.data.success) {
         toast.success("Question deleted successfully");
       } else {

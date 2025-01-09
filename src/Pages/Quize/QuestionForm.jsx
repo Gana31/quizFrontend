@@ -1,34 +1,67 @@
 import { useState, useEffect } from 'react';
 import { FaTimes } from 'react-icons/fa';
 
-function QuestionForm({ onSubmit, onClose, editingQuestion }) {
+function QuestionForm({ onSubmit, onClose, editingQuestion, selectedTopic }) {
   const [question, setQuestion] = useState('');
   const [options, setOptions] = useState(['', '', '', '']);
   const [correctAnswer, setCorrectAnswer] = useState('');
-  const [explanationLink, setExplanationLink] = useState(''); // New state for YouTube link
+  const [explanationLink, setExplanationLink] = useState('');
+  const [selectedSets, setSelectedSets] = useState([]);
+  const [errorMessage, setErrorMessage] = useState('');
 
+  const totalQuestions = selectedTopic?.questions?.length || 0;
+  const maxQuestions = selectedTopic?.maxQuestions || 0;
+    // console.log(selectedTopic)
   useEffect(() => {
     if (editingQuestion) {
-      setQuestion(editingQuestion.question);
+      setQuestion(editingQuestion.title);
       setOptions(editingQuestion.options);
       setCorrectAnswer(editingQuestion.correctAnswer);
       setExplanationLink(editingQuestion.explanationLink || '');
+      setSelectedSets(editingQuestion.selectedSets || []);
     }
   }, [editingQuestion]);
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    onSubmit({ question, options, correctAnswer, explanationLink });
+
+    if (totalQuestions >= maxQuestions) {
+      setErrorMessage('Maximum number of questions reached.');
+      return;
+    }
+
+
+    if (selectedSets.length > 2) {
+      setErrorMessage('You can only select up to 2 sets.');
+      return;
+    }
+
+    onSubmit({
+      title: question,
+      options,
+      correctAnswer,
+      explanationLink,
+      selectedSets,
+    });
+
     setQuestion('');
     setOptions(['', '', '', '']);
     setCorrectAnswer('');
     setExplanationLink('');
+    setSelectedSets([]);
+    setErrorMessage('');
   };
 
-  const handleOptionChange = (index, value) => {
-    const newOptions = [...options];
-    newOptions[index] = value;
-    setOptions(newOptions);
+  const handleSetSelection = (set) => {
+    if (selectedSets.includes(set)) {
+      // If the set is already selected, remove it
+      setSelectedSets((prevSets) => prevSets.filter((s) => s !== set));
+    } else {
+      // Ensure the user can select up to 2 sets
+      if (selectedSets.length < 2) {
+        setSelectedSets((prevSets) => [...prevSets, set]);
+      }
+    }
   };
 
   return (
@@ -45,81 +78,128 @@ function QuestionForm({ onSubmit, onClose, editingQuestion }) {
             <FaTimes size={24} />
           </button>
         </div>
-        <form onSubmit={handleSubmit} className="p-6 space-y-6">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Question
-            </label>
-            <input
-              type="text"
-              value={question}
-              onChange={(e) => setQuestion(e.target.value)}
-              className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              required
-            />
-          </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            {options.map((option, index) => (
-              <div key={index}>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Option {index + 1}
-                </label>
-                <input
-                  type="text"
-                  value={option}
-                  onChange={(e) => handleOptionChange(index, e.target.value)}
-                  className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  required
-                />
-              </div>
-            ))}
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Correct Answer
-            </label>
-            <select
-              value={correctAnswer}
-              onChange={(e) => setCorrectAnswer(e.target.value)}
-              className="w-full sm:w-auto px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              required
-            >
-              <option value="">Select correct answer</option>
-              {options.map((option, index) => (
-                <option key={index} value={option}>
-                  {option}
-                </option>
-              ))}
-            </select>
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Explanation Link (YouTube)
-            </label>
-            <input
-              type="url"
-              value={explanationLink}
-              onChange={(e) => setExplanationLink(e.target.value)}
-              placeholder="https://www.youtube.com/..."
-              className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            />
-          </div>
-          <div className="flex justify-end gap-3 pt-4">
+        {totalQuestions >= maxQuestions ? (
+          <div className="p-6 text-center">
+            <p className="text-red-600 font-medium">
+              You have reached the maximum number of questions for this topic ({maxQuestions}).
+            </p>
             <button
-              type="button"
               onClick={onClose}
-              className="px-4 py-2 text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors"
+              className="mt-4 px-4 py-2 text-white bg-purple-600 rounded-lg hover:bg-purple-700 transition-colors"
             >
-              Cancel
-            </button>
-            <button
-              type="submit"
-              className="px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg transition-colors"
-            >
-              {editingQuestion ? 'Update Question' : 'Add Question'}
+              Close
             </button>
           </div>
-        </form>
+        ) : (
+          <form onSubmit={handleSubmit} className="p-6 space-y-6">
+            {errorMessage && <p className="text-red-600">{errorMessage}</p>}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Question
+              </label>
+              <input
+                type="text"
+                value={question}
+                onChange={(e) => setQuestion(e.target.value)}
+                className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                required
+              />
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              {options.map((option, index) => (
+                <div key={index}>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Option {index + 1}
+                  </label>
+                  <input
+                    type="text"
+                    value={option}
+                    onChange={(e) => {
+                      const newOptions = [...options];
+                      newOptions[index] = e.target.value;
+                      setOptions(newOptions);
+                    }}
+                    className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    required
+                  />
+                </div>
+              ))}
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Correct Answer
+              </label>
+              <select
+                value={correctAnswer}
+                onChange={(e) => setCorrectAnswer(e.target.value)}
+                className="w-full sm:w-auto px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                required
+              >
+                <option value="">Select correct answer</option>
+                {options.map((option, index) => (
+                  <option key={index} value={option}>
+                    {option}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Explanation Link (YouTube)
+              </label>
+              <input
+                type="url"
+                value={explanationLink}
+                onChange={(e) => setExplanationLink(e.target.value)}
+                placeholder="https://www.youtube.com/..."
+                className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Select Sets (Choose up to 2 sets)
+              </label>
+              <div className="flex gap-4">
+                {['A', 'B', 'C', 'D'].map((set) => (
+                  <div
+                    key={set}
+                    onClick={() => handleSetSelection(set)}
+                    className={`cursor-pointer p-2 border rounded-lg ${
+                      selectedSets.includes(set) ? 'bg-purple-600 text-white' : 'bg-gray-200 text-gray-700'
+                    }`}
+                  >
+                    Set {set}
+                  </div>
+                ))}
+              </div>
+              {selectedSets.length === 2 && (
+                <p className="text-red-600 text-sm mt-2">
+                  You can select at Must 2 set.
+                </p>
+              )}
+              {selectedSets.length > 2 && (
+                <p className="text-red-600 text-sm mt-2">
+                  You can only select up to 2 sets.
+                </p>
+              )}
+            </div>
+            <div className="flex justify-end gap-3 pt-4">
+              <button
+                type="button"
+                onClick={onClose}
+                className="px-4 py-2 text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                type="submit"
+                className="px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg transition-colors"
+              >
+                {editingQuestion ? 'Update Question' : 'Add Question'}
+              </button>
+            </div>
+          </form>
+        )}
       </div>
     </div>
   );

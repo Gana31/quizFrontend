@@ -19,7 +19,7 @@ createRoot(document.getElementById('root')).render(
     <BrowserRouter>
   <StrictMode>
     <App />
-    <ToastContainer limit={1} />
+    <ToastContainer />
   </StrictMode>
     </BrowserRouter>
   </Provider>

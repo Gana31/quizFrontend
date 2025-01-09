@@ -1,6 +1,9 @@
+import { useEffect } from 'react';
 import { FaEdit, FaTrash, FaExternalLinkAlt } from 'react-icons/fa';
 
 function QuestionList({ questions = [], onDeleteQuestion, onEditQuestion }) {
+
+  useEffect(()=>{},[questions])
   return (
     <div className="space-y-4">
       {questions.length === 0 ? (
@@ -10,13 +13,13 @@ function QuestionList({ questions = [], onDeleteQuestion, onEditQuestion }) {
       ) : (
         questions.map((question, index) => (
           <div
-            key={question.id}
+            key={question._id}
             className="bg-gray-50 rounded-lg p-6 border border-gray-200"
           >
             <div className="flex flex-col md:flex-row md:justify-between items-start">
               <div className="flex-1 w-full">
                 <h3 className="font-medium text-gray-800 mb-3">
-                  <span className="font-semibold text-gray-600">Q{index + 1}:</span> {question.question}
+                  <span className="font-semibold text-gray-600">Q{index + 1}:</span> {question.title}
                 </h3>
                 <div className="w-full grid grid-cols-1 md:grid-cols-2 gap-3">
                   {question.options.map((option, i) => {
@@ -35,6 +38,24 @@ function QuestionList({ questions = [], onDeleteQuestion, onEditQuestion }) {
                     );
                   })}
                 </div>
+
+                {/* Show selected sets below options */}
+                {question.selectedSets && question.selectedSets.length > 0 && (
+                  <div className="mt-3">
+                    <p className="text-sm text-gray-600 font-semibold">Selected Sets:</p>
+                    <div className="flex gap-2 mt-2">
+                      {question.selectedSets.map((set, index) => (
+                        <div
+                          key={index}
+                          className="px-3 py-1 bg-purple-600 text-white rounded-full text-sm"
+                        >
+                          Set {set}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
                 {question.explanationLink && (
                   <div className="mt-3">
                     <a
@@ -56,7 +77,7 @@ function QuestionList({ questions = [], onDeleteQuestion, onEditQuestion }) {
                   <FaEdit />
                 </button>
                 <button
-                  onClick={() => onDeleteQuestion(question.id)}
+                  onClick={() => onDeleteQuestion(question._id)}
                   className="p-2 text-red-600 hover:bg-red-100 rounded-full transition-colors"
                 >
                   <FaTrash />

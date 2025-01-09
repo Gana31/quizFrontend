@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { FaPlus } from "react-icons/fa";
 import QuizList from "./QuizList";
 import QuizForm from "./QuizForm";
@@ -6,9 +6,11 @@ import TopicList from "./TopicList";
 import TopicForm from "./TopicForm";
 import QuestionList from "./QuestionList";
 import QuestionForm from "./QuestionForm";
+import { useDispatch, useSelector } from "react-redux";
+import { useNavigate } from "react-router-dom";
+import { addQuiz, deleteQuiz, updateQuiz, fetchQuizzes, addTopic, updateTopic, deleteTopic, addQuestion, updateQuestion, deleteQuestion } from "../../Services/Operations/quizeoperation";
 
 function Quiz() {
-  const [quizzes, setQuizzes] = useState([]);
   const [selectedQuiz, setSelectedQuiz] = useState(null);
   const [selectedTopic, setSelectedTopic] = useState(null);
   const [showQuizForm, setShowQuizForm] = useState(false);
@@ -17,150 +19,120 @@ function Quiz() {
   const [editingQuiz, setEditingQuiz] = useState(null);
   const [editingTopic, setEditingTopic] = useState(null);
   const [editingQuestion, setEditingQuestion] = useState(null);
-  const [selectedQuestion, setSelectedQuestion] = useState(null); // Add this line
-  // Handle adding/updating a quiz
-  const handleAddQuiz = (quiz) => {
-    if (editingQuiz) {
-      const updatedQuizzes = quizzes.map((q) =>
-        q.id === editingQuiz.id
-          ? { ...quiz, id: editingQuiz.id, topics: editingQuiz.topics }
-          : q
-      );
-      setQuizzes(updatedQuizzes);
-      const updatedQuiz = updatedQuizzes.find((q) => q.id === editingQuiz.id);
-      setSelectedQuiz(updatedQuiz); // Set the updated quiz as selected
-    } else {
-      const newQuiz = { ...quiz, id: Date.now(), topics: [] };
-      setQuizzes([...quizzes, newQuiz]);
-      setSelectedQuiz(newQuiz); // Set the newly created quiz as selected
+
+  const quizzes = useSelector((state) => state.quiz.quizzes); 
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
+
+  // Fetch quizzes once when the component mounts
+  useEffect(() => {
+    // console.log("Fetch quizzes on mount",quizzes);
+    dispatch(fetchQuizzes());
+  }, [dispatch]);  // Only runs once when the component mounts
+
+  // Update selectedQuiz and selectedTopic based on quizzes
+  useEffect(() => {
+    if (quizzes.length > 0 && !selectedQuiz) {
+      setSelectedQuiz(quizzes[0]);  // Select the first quiz by default
+    } else if (selectedQuiz) {
+      const updatedQuiz = quizzes.find((q) => q._id === selectedQuiz._id);
+      setSelectedQuiz(updatedQuiz || null);
     }
 
-    setSelectedTopic(null); // Reset selected topic
-    setShowQuizForm(false);
-    setEditingQuiz(null);
-  };
+    if (selectedQuiz && selectedTopic) {
+      const updatedTopic = selectedQuiz?.topics.find((t) => t._id === selectedTopic._id) || null;
+      setSelectedTopic(updatedTopic);
+    }
+  }, [quizzes, selectedQuiz, selectedTopic]);  // Dependencies updated accordingly
 
-  // Handle deleting a quiz
-  const handleDeleteQuiz = (quizId) => {
-    setQuizzes(quizzes.filter((quiz) => quiz.id !== quizId));
-    if (selectedQuiz?.id === quizId) setSelectedQuiz(null);
-    setSelectedTopic(null);
-  };
-
-  // Handle adding/updating a topic
-  const handleAddTopic = (topic) => {
-    const updatedQuizzes = quizzes.map((quiz) => {
-      if (quiz.id === selectedQuiz.id) {
-        const topics = editingTopic
-          ? quiz.topics.map((t) =>
-              t.id === editingTopic.id
-                ? { ...topic, id: editingTopic.id, questions: editingTopic.questions }
-                : t
-            )
-          : [...quiz.topics, { ...topic, id: Date.now(), questions: [] }];
-        return { ...quiz, topics };
+  const handleAddQuiz = async (quiz) => {
+    try {
+      if (editingQuiz) {
+        // Optimistically update the quiz list in Redux state for smoother UX
+        await dispatch(updateQuiz(editingQuiz._id, quiz, navigate));
+      } else {
+        // Optimistically add new quiz to the list
+       await dispatch(addQuiz(quiz, navigate));
       }
-      return quiz;
-    });
-
-    setQuizzes(updatedQuizzes);
-    const updatedQuiz = updatedQuizzes.find((q) => q.id === selectedQuiz.id);
-    setSelectedQuiz(updatedQuiz);
-
-    const updatedTopic = updatedQuiz.topics.find(
-      (t) => t.id === (editingTopic ? editingTopic.id : Date.now())
-    );
-    setSelectedTopic(updatedTopic); // Set the newly created or updated topic as selected
-    setShowTopicForm(false);
-    setEditingTopic(null);
+      dispatch(fetchQuizzes());  
+    } catch (error) {
+      toast.error("An error occurred while saving the quiz.");
+    } finally {
+      setShowQuizForm(false);
+      setEditingQuiz(null);
+    }
   };
 
-  // Handle deleting a topic
-  const handleDeleteTopic = (topicId) => {
-    const updatedQuizzes = quizzes.map((quiz) => {
-      if (quiz.id === selectedQuiz.id) {
-        return {
-          ...quiz,
-          topics: quiz.topics.filter((t) => t.id !== topicId),
-        };
+  const handleDeleteQuiz = async (quizId) => {
+    try {
+      // Optimistically delete the quiz from the list
+      await  dispatch(deleteQuiz(quizId));
+      dispatch(fetchQuizzes()); // Ensure the latest quiz list is fetched after deletion
+    } catch (error) {
+      toast.error("An error occurred while deleting the quiz.");
+    }
+  };
+
+  const handleAddTopic = async (topic) => {
+    try {
+      if (editingTopic) {
+        // Optimistically update the topic in the selected quiz
+        await dispatch(updateTopic(editingTopic._id, topic));
+      } else {
+        // Optimistically add new topic to the selected quiz
+        await dispatch(addTopic(selectedQuiz._id, topic));
       }
-      return quiz;
-    });
-
-    setQuizzes(updatedQuizzes);
-    const updatedQuiz = updatedQuizzes.find((q) => q.id === selectedQuiz.id);
-    setSelectedQuiz(updatedQuiz);
-    setSelectedTopic(null);
+      dispatch(fetchQuizzes()); // Ensure latest data is fetched after operation
+      setShowTopicForm(false);
+      setEditingTopic(null);
+    } catch (error) {
+      toast.error("An error occurred while saving the topic.");
+    }
   };
 
-  // Handle adding/updating a question
-  const handleAddQuestion = (question) => {
-    const updatedQuizzes = quizzes.map((quiz) => {
-      if (quiz.id === selectedQuiz.id) {
-        const updatedTopics = quiz.topics.map((topic) => {
-          if (topic.id === selectedTopic.id) {
-            const questions = editingQuestion
-              ? topic.questions.map((q) =>
-                  q.id === editingQuestion.id ? { ...question, id: editingQuestion.id } : q
-                )
-              : [...topic.questions, { ...question, id: Date.now() }];
-            return { ...topic, questions };
-          }
-          return topic;
-        });
-        return { ...quiz, topics: updatedTopics };
+  const handleDeleteTopic = async (topicId) => {
+    try {
+      // Optimistically delete the topic from the selected quiz
+      await dispatch(deleteTopic(topicId));
+      setSelectedTopic(null);
+      await dispatch(fetchQuizzes()); // Ensure the latest quiz list is fetched after deletion
+    } catch (error) {
+      toast.error("An error occurred while deleting the topic.");
+    }
+  };
+
+  const handleAddQuestion = async (question) => {
+    try {
+      if (editingQuestion) {
+        // Optimistically update the question in the selected topic
+        await  dispatch(updateQuestion(editingQuestion._id, question));
+      } else {
+        // Optimistically add a new question to the selected topic
+        await dispatch(addQuestion(selectedTopic._id, question));
       }
-      return quiz;
-    });
-
-    setQuizzes(updatedQuizzes);
-    const updatedQuiz = updatedQuizzes.find((q) => q.id === selectedQuiz.id);
-    setSelectedQuiz(updatedQuiz);
-
-    const updatedTopic = updatedQuiz.topics.find((t) => t.id === selectedTopic.id);
-    setSelectedTopic(updatedTopic);
-
-    const updatedQuestion = updatedTopic.questions.find(
-      (q) => q.id === (editingQuestion ? editingQuestion.id : Date.now())
-    );
-    setEditingQuestion(null); // Reset editing question after submission
-    setSelectedQuestion(updatedQuestion); // Set the newly created or updated question as selected
-    setShowQuestionForm(false);
+      dispatch(fetchQuizzes()); // Ensure latest data is fetched after operation
+      setShowQuestionForm(false);
+      setEditingQuestion(null);
+    } catch (error) {
+      toast.error("An error occurred while saving the question.");
+    }
   };
 
-  // Handle deleting a question
-  const handleDeleteQuestion = (questionId) => {
-    const updatedQuizzes = quizzes.map((quiz) => {
-      if (quiz.id === selectedQuiz.id) {
-        const updatedTopics = quiz.topics.map((topic) => {
-          if (topic.id === selectedTopic.id) {
-            return {
-              ...topic,
-              questions: topic.questions.filter((q) => q.id !== questionId),
-            };
-          }
-          return topic;
-        });
-        return { ...quiz, topics: updatedTopics };
-      }
-      return quiz;
-    });
-
-    setQuizzes(updatedQuizzes);
-    const updatedQuiz = updatedQuizzes.find((q) => q.id === selectedQuiz.id);
-    setSelectedQuiz(updatedQuiz);
-
-    const updatedTopic = updatedQuiz.topics.find((t) => t.id === selectedTopic.id);
-    setSelectedTopic(updatedTopic);
+  const handleDeleteQuestion = async (questionId) => {
+    try {
+      // Optimistically delete the question from the selected topic
+      await dispatch(deleteQuestion(questionId));
+      await dispatch(fetchQuizzes()); // Ensure the latest quiz list is fetched after deletion
+    } catch (error) {
+      toast.error("An error occurred while deleting the question.");
+    }
   };
 
-  // Handle selecting a quiz
   const handleSelectQuiz = (quiz) => {
     setSelectedQuiz(quiz);
     setSelectedTopic(null);
   };
 
-  // Reset form state when closing form
   const handleCloseForm = () => {
     setShowQuizForm(false);
     setShowTopicForm(false);
@@ -267,24 +239,17 @@ function Quiz() {
 
         {/* Forms */}
         {showQuizForm && (
-          <QuizForm
-            onSubmit={handleAddQuiz}
-            onClose={handleCloseForm}
-            editingQuiz={editingQuiz}
-          />
+          <QuizForm onSubmit={handleAddQuiz} onClose={handleCloseForm} editingQuiz={editingQuiz} />
         )}
         {showTopicForm && (
-          <TopicForm
-            onSubmit={handleAddTopic}
-            onClose={handleCloseForm}
-            editingTopic={editingTopic}
-          />
+          <TopicForm onSubmit={handleAddTopic} onClose={handleCloseForm} editingTopic={editingTopic} />
         )}
         {showQuestionForm && (
           <QuestionForm
             onSubmit={handleAddQuestion}
             onClose={handleCloseForm}
             editingQuestion={editingQuestion}
+            selectedTopic={selectedTopic}
           />
         )}
       </div>
