@@ -229,3 +229,19 @@ export function fetchQuestions(quizId, topicId) {
     dispatch(setLoading(false));
   };
 }
+
+
+export const fetchUpcomingQuizzes = async () => {
+  try {
+    const response = await apiClient.get("/getUpcomingQuizzes"); // Adjust the API endpoint
+    if (response.data.success) {
+      return response.data.data; // Return the upcoming quizzes data
+    } else {
+      toast.error(response.data.message);
+      return [];
+    }
+  } catch (error) {
+    toast.error(error.response?.data?.message || "Failed to fetch upcoming quizzes");
+    return [];
+  }
+};

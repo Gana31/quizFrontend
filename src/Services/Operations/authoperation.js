@@ -34,12 +34,12 @@ export function login(data, navigate) {
 
             localStorage.setItem('accessToken', true);
             localStorage.setItem('user',JSON.stringify( user2))
-            navigate('/quiz');
+           await dispatch(setLoginData({user: user2,accessToken : true}))
             toast.success('Logged in successfully');
-            dispatch(setLoginData({user: user2,accessToken : true}))
+            navigate('/quiz');
             
           } 
-            navigate("/")
+            navigate("/quiz")
       } catch (error) {
         console.log("LOGIN API ERROR............", error)
         toast.error(error.response.data.message || "Login Failed")

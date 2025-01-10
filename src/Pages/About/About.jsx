@@ -47,7 +47,7 @@ function About() {
                     <p className="font-mentiText lg:text-2xl lg:w-[90%] text-wrap">
                         A platform to create topic-wise quizzes, conduct exams, and provide engaging learning experiences. Import quizzes from PDFs and let candidates attempt them effortlessly.
                     </p>
-                    <button className=" w-2/6 px-4 py-4 lg:px-7 lg:py-4 bg-gray-800 rounded-full hover:bg-black text-white text-sm  font-semibold">
+                    <button className=" w-[300px] px-4 py-4 lg:px-7 lg:py-4 bg-gray-800 rounded-full hover:bg-black text-white text-sm  font-semibold">
           Get started, it's free
         </button>
                 </div>
@@ -102,15 +102,15 @@ function About() {
                 </div>
             </div>
             <div className="max-w-7xl mx-auto p-6">
-      <div className=" font-mentiText grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+      <div className=" font-mentiText grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
         {cards.map((card, index) => (
           <div
             key={index}
-            className="bg-purple-50 rounded-lg p-6 hover:shadow-lg transition duration-300"
+            className="bg-[rgb(248,248,254)] rounded-lg p-6 hover:shadow-lg transition duration-300"
           >
             <div className="text-4xl mb-4">{card.icon}</div>
             <h3 className="text-lg font-mentiDisplay font-semibold mb-2">{card.title}</h3>
-            <p className="text-gray-600">{card.description}</p>
+            <p className="font-mentiText text-gray-600">{card.description}</p>
           </div>
         ))}
       </div>

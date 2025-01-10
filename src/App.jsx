@@ -1,43 +1,62 @@
-import { Navigate, Route, Routes } from "react-router-dom"
-import Navbar from "./Component/Common/Navbar"
-import SignupPage from "./Pages/Auth/Signup"
-import HomePage from "./Pages/Home/HomePage"
-import { useSelector } from "react-redux"
-import NotFound from "./Component/NotFound"
-import Footer from "./Component/Common/Footer"
-import Quize from "./Pages/Quize/Quize"
-import ProtectedRoute from "./Component/Common/ProtectedRoutes"
-import About from "./Pages/About/About"
-
-
+import { Navigate, Route, Routes } from "react-router-dom";
+import Navbar from "./Component/Common/Navbar";
+import SignupPage from "./Pages/Auth/Signup";
+import HomePage from "./Pages/Home/HomePage";
+import { useSelector } from "react-redux";
+import NotFound from "./Component/NotFound";
+import Footer from "./Component/Common/Footer";
+import Quize from "./Pages/Quize/Quize";
+import ProtectedRoute from "./Component/Common/ProtectedRoutes";
+import About from "./Pages/About/About";
+import StudentQuizMain from "./Pages/StudentPage/StudentQuizMain";
+import QuizExam from "./Pages/StudentPage/QuizExam";
+import { useState } from "react";
 
 function App() {
- 
-const {accessToken } = useSelector((state)=>state.auth)
+  const { accessToken, user } = useSelector((state) => state.auth); // Assuming user info is in `auth`
+  const [isFullscreen, setIsFullscreen] = useState(false);
+
   return (
     <>
-    <Navbar/>
-    <Routes>
-        <Route 
-          path="/signup" 
-          element={accessToken ? <Navigate to="/" /> : <SignupPage/>} 
+      {isFullscreen ? null : <Navbar />} {/* Hide Navbar in fullscreen */}
+      <Routes>
+        <Route
+          path="/signup"
+          element={
+            accessToken ? (
+              <Navigate to="/" />
+            ) : (
+              <SignupPage initialForm="signup" />
+            )
+          }
         />
-        <Route path="/" element={<HomePage />} />
-        {/* <Route path="/contact" element={<ContactPage />} /> */}
-        <Route path="/about" element={<About/>} />
-        <Route path="*" element={<NotFound />} />
 
-       
-        Protected Routes
-        <Route 
-          path="/quiz" 
-          element={<ProtectedRoute element={<Quize />} />} 
+        <Route path="/" element={<HomePage />} />
+        <Route path="/about" element={<About />} />
+        <Route path="/s" element={<StudentQuizMain />} />
+        <Route
+          path="/q"
+          element={<QuizExam setIsFullscreen={setIsFullscreen} />}
+        /> {/* Pass the fullscreen setter to QuizExam */}
+        <Route path="*" element={<NotFound />} />
+        <Route
+          path="/quiz"
+          element={
+            <ProtectedRoute
+              element={
+                user?.account_type === "Teacher" ? (
+                  <Quize />
+                ) : (
+                  <StudentQuizMain/>
+                )
+              }
+            />
+          }
         />
-       
       </Routes>
-  <Footer/>
+      {isFullscreen ? null : <Footer />} {/* Hide Footer in fullscreen */}
     </>
-  )
+  );
 }
 
-export default App
+export default App;

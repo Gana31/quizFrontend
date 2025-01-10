@@ -22,10 +22,24 @@ const Navbar = () => {
     setIsProfileMenuOpen(false); // Close profile dropdown
   };
 
+  const handleLoginClick = () => {
+    navigate("/signup", { state: { form: "login" } });
+    setIsMenuOpen(false); // Close hamburger menu
+  };
+
+  const handleSignupClick = () => {
+    navigate("/signup", { state: { form: "signup" } });
+    setIsMenuOpen(false); // Close hamburger menu
+  };
 
   const linkClasses = ({ isActive }) =>
     `text-base font-medium transition-colors ${
       isActive ? 'text-blue-600' : 'text-black hover:text-blue-600'
+    }`;
+
+  const mobileLinkClasses = ({ isActive }) =>
+    `text-base font-medium transition-colors ${
+      isActive ? 'text-white' : 'text-black hover:text-blue-600'
     }`;
 
   return (
@@ -55,20 +69,21 @@ const Navbar = () => {
       <div className='flex gap-x-3 items-center'>
         {!accessToken && (
           <>
-            {/* Log In Button (hidden on mobile) */}
-            <NavLink
-              to="/signup"
-              className='hidden md:block bg-white text-base font-mentiText font-semibold py-2 px-4 rounded-full'
+            {/* Log In Button */}
+            <button
+              onClick={handleLoginClick}
+              className="hidden md:block bg-white text-base font-semibold py-2 px-4 rounded-full"
             >
               Log in
-            </NavLink>
+            </button>
+
             {/* Sign Up Button */}
-            <NavLink
-              to="/signup"
-              className='bg-blue-600 text-sm font-mentiText font-semibold py-2 px-6 text-white rounded-full hover:bg-blue-700 transition-all duration-100'
+            <button
+              onClick={handleSignupClick}
+              className="bg-blue-600 text-sm font-semibold py-2 px-6 text-white rounded-full hover:bg-blue-700 transition-all duration-100"
             >
               Sign up
-            </NavLink>
+            </button>
           </>
         )}
 
@@ -123,48 +138,45 @@ const Navbar = () => {
         </div>
         {/* Menu Items */}
         <div className='flex flex-col items-start gap-y-2 p-6 text-white'>
-          <NavLink to="/" onClick={toggleMenu} className={linkClasses}>
+          <NavLink to="/" onClick={toggleMenu} className={mobileLinkClasses}>
             Home
           </NavLink>
-          <NavLink to="/about" onClick={toggleMenu} className={linkClasses}>
+          <NavLink to="/about" onClick={toggleMenu} className={mobileLinkClasses}>
             About
           </NavLink>
-          <NavLink to="/contact" onClick={toggleMenu} className={linkClasses}>
+          <NavLink to="/contact" onClick={toggleMenu} className={mobileLinkClasses}>
             Contact
           </NavLink>
-          <NavLink to="/quiz" onClick={toggleMenu} className={linkClasses}>
+          <NavLink to="/quiz" onClick={toggleMenu} className={mobileLinkClasses}>
             Quiz
           </NavLink>
         </div>
         {/* Buttons */}
         {!accessToken && (
           <div className='flex flex-col text-center gap-y-4 mx-4 mt-6'>
-            <NavLink
-              to="/signup"
-              onClick={toggleMenu}
+            <button
+              onClick={handleLoginClick}
               className='text-white font-medium items-center w-full justify-center text-base'
             >
               Log in
-            </NavLink>
-            <NavLink
-              to="/signup"
-              onClick={toggleMenu}
+            </button>
+            <button
+              onClick={handleSignupClick}
               className='bg-white text-black w-full items-center justify-center text-base font-medium py-2 px-6 rounded-full'
             >
               Sign up
-            </NavLink>
+            </button>
           </div>
         )}
 
-{accessToken && (
+        {accessToken && (
           <div className='flex flex-col text-center gap-y-4 mx-4 mt-6'>
-            <NavLink
-              to="/signup"
+            <button
               onClick={handleLogout}
               className='bg-white text-black w-[80%] items-center justify-center text-base font-medium py-2 px-6 rounded-full'
             >
               Log Out
-            </NavLink>
+            </button>
           </div>
         )}
       </div>

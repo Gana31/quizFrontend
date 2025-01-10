@@ -1,14 +1,18 @@
-import React, { useState } from "react";
-import { useDispatch } from "react-redux";
-import { useNavigate } from "react-router-dom";
+import React, { useState, useEffect } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import { useLocation, useNavigate } from "react-router-dom";
 import { FaEye, FaEyeSlash } from "react-icons/fa";
 import { Link } from "react-router-dom";
 import LogoPage from "../../Component/Common/Logo";
 import { login, Register } from "../../Services/Operations/authoperation";
+import LoadingSpinner from "../../Component/Common/Spinner";
 
-function SignupPage() {
+function SignupPage({ initialForm }) {
   const [showPassword, setShowPassword] = useState(false);
-  const [Signup, SetSignup] = useState(true);
+  const location = useLocation();
+  const [Signup, SetSignup] = useState(
+    location.state?.form === "login" ? false : initialForm === "signup"
+  );
   const [accountType, setAccountType] = useState("User");
   const [formData, setFormData] = useState({
     name: "",
@@ -18,6 +22,20 @@ function SignupPage() {
 
   const dispatch = useDispatch();
   const navigate = useNavigate();
+  const loading = useSelector((state) => state.auth.loading); // Access loading state from Redux
+
+  // Effect to switch form when navigating directly to the page
+  useEffect(() => {
+    if (location.state?.form === "login") {
+      SetSignup(false); // Show login form when coming from login link in navbar
+    } else if (location.state?.form === "signup") {
+      SetSignup(true); // Show signup form when coming from signup link in navbar
+    }
+  }, [location.state]);
+
+  const handleToggleForm = () => {
+    SetSignup((prevState) => !prevState);
+  };
 
   const handleAccountTypeChange = (type) => {
     setAccountType(type); // Update account type when button is clicked
@@ -35,7 +53,7 @@ function SignupPage() {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    const payload = { ...formData, account_type:accountType }; // Include accountType in the payload
+    const payload = { ...formData, account_type: accountType }; // Include accountType in the payload
 
     if (Signup) {
       // Call Register API
@@ -63,22 +81,26 @@ function SignupPage() {
           We recommend using your work or school email to keep things separate
         </p>
 
-      {Signup &&   <div className="w-full flex p-2 my-4 bg-gray-100 rounded-full">
-          <button
-            type="button"
-            className={`w-1/2 py-2 font-medium rounded-full ${accountType === "Teacher" ? "bg-black text-white" : "bg-gray-100 text-gray-600"}`}
-            onClick={() => handleAccountTypeChange("Teacher")}
-          >
-            Teacher
-          </button>
-          <button
-            type="button"
-            className={`w-1/2 py-2 font-medium rounded-full ${accountType === "User" ? "bg-black text-white" : "bg-gray-100 text-gray-600"}`}
-            onClick={() => handleAccountTypeChange("User")}
-          >
-            User
-          </button>
-        </div>}
+        {Signup && (
+          <div className="w-full flex p-2 my-4 bg-gray-100 rounded-full">
+            <button
+              type="button"
+              className={`w-1/2 py-2 font-medium rounded-full ${accountType === "Teacher" ? "bg-black text-white" : "bg-gray-100 text-gray-600"
+                }`}
+              onClick={() => handleAccountTypeChange("Teacher")}
+            >
+              Teacher
+            </button>
+            <button
+              type="button"
+              className={`w-1/2 py-2 font-medium rounded-full ${accountType === "User" ? "bg-black text-white" : "bg-gray-100 text-gray-600"
+                }`}
+              onClick={() => handleAccountTypeChange("User")}
+            >
+              User
+            </button>
+          </div>
+        )}
 
         <form className="text-xs" onSubmit={handleSubmit}>
           {Signup && (
@@ -144,9 +166,18 @@ function SignupPage() {
           </div>
           <button
             type="submit"
-            className="w-full bg-gray-800 text-white text-sm font-medium py-2 rounded-full hover:bg-black"
+            disabled={loading} // Disable button when loading
+            className={`w-full text-sm font-medium py-2 rounded-full flex items-center justify-center ${loading ? "bg-gray-500 cursor-not-allowed" : "bg-gray-800 hover:bg-black text-white"
+              }`}
+            style={{ height: "2.5rem" }} // Fixed height for the button
           >
-            {Signup ? "Sign up" : "Sign In"}
+            {loading ? (
+              <div className="w-full h-full flex justify-center items-center">
+                <LoadingSpinner size={2} color="white" /> {/* White spinner inside button */}
+              </div>
+            ) : (
+              Signup ? "Sign up" : "Sign In"
+            )}
           </button>
         </form>
 

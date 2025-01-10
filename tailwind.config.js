@@ -10,6 +10,15 @@ export default {
       mentiDisplay: ['MentiDisplay', 'sans-serif'],
       mentiText: ['MentiText', 'sans-serif'],
     },},
+    animation: {
+      animloader: "animloader 0.3s linear infinite alternate",
+    },
+    keyframes: {
+      animloader: {
+        "0%": { height: "48px" },
+        "100%": { height: "4px" },
+      },
+    },
   },
   plugins: [],
 }

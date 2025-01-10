@@ -9,6 +9,7 @@ import QuestionForm from "./QuestionForm";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { addQuiz, deleteQuiz, updateQuiz, fetchQuizzes, addTopic, updateTopic, deleteTopic, addQuestion, updateQuestion, deleteQuestion } from "../../Services/Operations/quizeoperation";
+import LoadingSpinner from "../../Component/Common/Spinner";
 
 function Quiz() {
   const [selectedQuiz, setSelectedQuiz] = useState(null);
@@ -21,6 +22,7 @@ function Quiz() {
   const [editingQuestion, setEditingQuestion] = useState(null);
 
   const quizzes = useSelector((state) => state.quiz.quizzes); 
+  const {loading} = useSelector((state) => state.auth); 
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
@@ -30,20 +32,33 @@ function Quiz() {
     dispatch(fetchQuizzes());
   }, [dispatch]);  // Only runs once when the component mounts
 
-  // Update selectedQuiz and selectedTopic based on quizzes
   useEffect(() => {
     if (quizzes.length > 0 && !selectedQuiz) {
-      setSelectedQuiz(quizzes[0]);  // Select the first quiz by default
+      // Select the first quiz by default
+      const initialQuiz = quizzes[0];
+      setSelectedQuiz(initialQuiz);
+  
+      // If the initial quiz has topics, select the first topic
+      if (initialQuiz.topics && initialQuiz.topics.length > 0) {
+        setSelectedTopic(initialQuiz.topics[0]);
+      }
     } else if (selectedQuiz) {
+      // Update selectedQuiz in case it has changed in the quizzes list
       const updatedQuiz = quizzes.find((q) => q._id === selectedQuiz._id);
       setSelectedQuiz(updatedQuiz || null);
+  
+      // If the updated quiz has topics and no topic is selected, select the first topic
+      if (updatedQuiz?.topics && updatedQuiz.topics.length > 0 && !selectedTopic) {
+        setSelectedTopic(updatedQuiz.topics[0]);
+      }
     }
-
+  
+    // Ensure selectedTopic is updated when selectedQuiz changes
     if (selectedQuiz && selectedTopic) {
-      const updatedTopic = selectedQuiz?.topics.find((t) => t._id === selectedTopic._id) || null;
+      const updatedTopic = selectedQuiz.topics.find((t) => t._id === selectedTopic._id) || null;
       setSelectedTopic(updatedTopic);
     }
-  }, [quizzes, selectedQuiz, selectedTopic]);  // Dependencies updated accordingly
+  }, [quizzes, selectedQuiz, selectedTopic]);
 
   const handleAddQuiz = async (quiz) => {
     try {
@@ -141,6 +156,12 @@ function Quiz() {
     setEditingTopic(null);
     setEditingQuestion(null);
   };
+
+  if (loading) {
+    // Display spinner while loading
+    return <div className="w-[100vw] h-[100vh]"><LoadingSpinner size={12} color="purple" /></div>;
+  }
+
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-50 to-blue-50 p-8">

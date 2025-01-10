@@ -18,6 +18,7 @@ function formatDateTimeRange(startTime, endTime) {
 function QuizList({ quizzes, onSelectQuiz, selectedQuiz, onDeleteQuiz, onEditQuiz }) {
 useEffect(()=>{
   
+  
 },[quizzes])
   return (
     <div className="space-y-3">
