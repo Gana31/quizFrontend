@@ -11,6 +11,7 @@ import About from "./Pages/About/About";
 import StudentQuizMain from "./Pages/StudentPage/StudentQuizMain";
 import QuizExam from "./Pages/StudentPage/QuizExam";
 import { useState } from "react";
+import OTPForm from "./Component/OtpPage";
 
 function App() {
   const { accessToken, user } = useSelector((state) => state.auth); // Assuming user info is in `auth`
@@ -34,6 +35,7 @@ function App() {
         <Route path="/" element={<HomePage />} />
         <Route path="/about" element={<About />} />
         <Route path="/s" element={<StudentQuizMain />} />
+        <Route path="/o" element={<OTPForm />} />
         <Route
           path="/q"
           element={<QuizExam setIsFullscreen={setIsFullscreen} />}

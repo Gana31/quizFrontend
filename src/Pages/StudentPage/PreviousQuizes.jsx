@@ -21,6 +21,8 @@ const previousQuizzes = [
             id: 1,
             topic: "Speed and Time",
             question: "A car travels 300 km in 4 hours. What is its average speed?",
+            options: ["60 km/h", "70 km/h", "75 km/h", "80 km/h"],
+            explanationVideo: "https://www.youtube.com/watch?v=XLJas9J91kw",
             userAnswer: "75 km/h",
             correctAnswer: "75 km/h",
             isCorrect: true
@@ -30,6 +32,8 @@ const previousQuizzes = [
             topic: "Speed and Time",
             question: "If a train covers 240 km in 2 hours, what will be its speed in m/s?",
             userAnswer: "30 m/s",
+            options: ["60 km/h", "70 km/h", "33.33 m/s", "80 km/h"],
+            explanationVideo: "https://www.youtube.com/watch?v=example1",
             correctAnswer: "33.33 m/s",
             isCorrect: false
           }
@@ -46,6 +50,8 @@ const previousQuizzes = [
             topic: "Proportions",
             question: "If 3 books cost $45, how much will 7 books cost?",
             userAnswer: "$105",
+            options: ["60 km/h", "70 km/h", "75 km/h", "$105"],
+            explanationVideo: "https://www.youtube.com/watch?v=example1",
             correctAnswer: "$105",
             isCorrect: true
           },
@@ -54,6 +60,8 @@ const previousQuizzes = [
             topic: "Proportions",
             question: "In a map, 2 cm represents 1 km. How many km will 5 cm represent?",
             userAnswer: "2.5 km",
+            options: ["60 km/h", "2.5 km", "75 km/h", "80 km/h"],
+            explanationVideo: "https://www.youtube.com/watch?v=example1",
             correctAnswer: "2.5 km",
             isCorrect: true
           }

@@ -245,3 +245,19 @@ export const fetchUpcomingQuizzes = async () => {
     return [];
   }
 };
+
+
+export const fetchLiveQuizzes = async () => {
+  try {
+    const response = await apiClient.get("/live-quizzes"); // Adjust the API endpoint
+    if (response.data.success) {
+      return response.data.data; // Return the upcoming quizzes data
+    } else {
+      toast.error(response.data.message);
+      return [];
+    }
+  } catch (error) {
+    toast.error(error.response?.data?.message || "Failed to fetch Live quizzes");
+    return [];
+  }
+};

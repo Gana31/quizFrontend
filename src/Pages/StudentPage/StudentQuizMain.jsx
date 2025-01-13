@@ -4,7 +4,7 @@ import DashboardStats from './StudentDashboard';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, LineChart, Line } from 'recharts';
 import QuizCard from './QuizCard';
 import PreviousQuizzes from './PreviousQuizes';
-import { fetchUpcomingQuizzes } from '../../Services/Operations/quizeoperation';
+import { fetchLiveQuizzes, fetchUpcomingQuizzes } from '../../Services/Operations/quizeoperation';
 
 
 
@@ -31,30 +31,70 @@ const growthData = [
 function StudentQuizMain() {
   const [activeTab, setActiveTab] = useState('dashboard');
   const [upcomingQuizzes, setUpcomingQuizzes] = useState([]);
+  const [liveQuizzes, setLiveQuizzes] = useState([]);
 
   useEffect(() => {
-    // Fetch upcoming quizzes when the component mounts
-    const getQuizzes = async () => {
+    // Fetch upcoming quizzes
+    const getUpcomingQuizzes = async () => {
       const quizzes = await fetchUpcomingQuizzes();
       setUpcomingQuizzes(quizzes);
     };
-    getQuizzes();
-  }, []); //
 
+    // Fetch live quizzes
+    const getLiveQuizzes = async () => {
+      const quizzes = await fetchLiveQuizzes();
+      setLiveQuizzes(quizzes);
+    };
+
+    getUpcomingQuizzes();
+    getLiveQuizzes();
+  }, []);
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col md:flex-row">
-      <Sidebar activeTab={activeTab} setActiveTab={setActiveTab} />
-      
+      <div className='min-h-screen'>
+        <Sidebar activeTab={activeTab} setActiveTab={setActiveTab} />
+      </div>
+
       {/* Main Content */}
-      <main className="flex-1 p-4 md:p-8 md:ml-64">
+      <main className="flex-1 p-4 md:p-8 md:ml-10">
         {activeTab === 'upcoming' && (
           <div>
             <h2 className="text-2xl md:text-3xl font-bold text-gray-900 mb-6 md:mb-8">Upcoming Quizzes</h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
-              {upcomingQuizzes.map((quiz) => (
-                <QuizCard key={quiz.id} quiz={quiz} />
-              ))}
-            </div>
+            {upcomingQuizzes.length === 0 ? (
+              <div className="text-center text-gray-500 font-medium py-6">
+                No upcoming quizzes are available at the moment. Please check back later!
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
+                {upcomingQuizzes.map((quiz) => (
+                  <QuizCard key={quiz.id} quiz={quiz} />
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+
+{activeTab === "liveQuiz" && (
+          <div>
+            <h2 className="text-2xl md:text-3xl font-bold text-gray-900 mb-6 md:mb-8">Live Quizzes</h2>
+            {liveQuizzes.length === 0 ? (
+              <div className="text-center text-gray-500 font-medium py-6">
+                No live quizzes are currently available. Please check back later!
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
+                {liveQuizzes.map((quiz) => (
+                  <QuizCard
+                    key={quiz.id}
+                    quiz={{
+                      ...quiz,
+                      buttonText: "Enter Quiz",
+                      isLive: true,
+                    }}
+                  />
+                ))}
+              </div>
+            )}
           </div>
         )}
 
@@ -62,7 +102,7 @@ function StudentQuizMain() {
           <div>
             <h2 className="text-2xl md:text-3xl font-bold text-gray-900 mb-6 md:mb-8">Your Quiz Dashboard</h2>
             <DashboardStats />
-            
+
             {/* Performance Chart */}
             <div className="mt-6 md:mt-8 bg-white p-4 md:p-6 rounded-lg shadow-lg">
               <h3 className="text-lg md:text-xl font-semibold mb-4">Quiz Performance History</h3>
@@ -92,10 +132,10 @@ function StudentQuizMain() {
                     <YAxis />
                     <Tooltip />
                     <Legend />
-                    <Line 
-                      type="monotone" 
-                      dataKey="score" 
-                      stroke="#8884d8" 
+                    <Line
+                      type="monotone"
+                      dataKey="score"
+                      stroke="#8884d8"
                       strokeWidth={2}
                       name="Average Score"
                       dot={{ r: 4 }}
