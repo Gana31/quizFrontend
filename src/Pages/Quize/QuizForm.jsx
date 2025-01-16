@@ -9,10 +9,19 @@ function QuizForm({ onSubmit, onClose, editingQuiz }) {
 
   useEffect(() => {
     if (editingQuiz) {
-      setName(editingQuiz.name);
-      setDescription(editingQuiz.description);
-      setStartTime(editingQuiz.startTime); // Assuming startTime is in a valid format
-      setEndTime(editingQuiz.endTime);     // Assuming endTime is in a valid format
+      setName(editingQuiz.name || "");
+      setDescription(editingQuiz.description || "");
+      // Format startTime and endTime to match "datetime-local" input requirements
+      setStartTime(
+        editingQuiz.startTime
+          ? new Date(editingQuiz.startTime).toISOString().slice(0, 16)
+          : ""
+      );
+      setEndTime(
+        editingQuiz.endTime
+          ? new Date(editingQuiz.endTime).toISOString().slice(0, 16)
+          : ""
+      );
     }
   }, [editingQuiz]);
 

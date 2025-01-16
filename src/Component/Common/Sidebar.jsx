@@ -2,13 +2,14 @@ import React from "react";
 import { FaBookOpen, FaClipboardList } from "react-icons/fa";
 import { IoLogOut } from "react-icons/io5";
 import { MdDashboardCustomize } from "react-icons/md";
-import { RiLiveFill } from "react-icons/ri";
+import { RiFeedbackFill, RiLiveFill } from "react-icons/ri";
 function Sidebar({ activeTab, setActiveTab }) {
   const menuItems = [
     { id: "dashboard", label: "Dashboard", icon: MdDashboardCustomize },
     { id: "upcoming", label: "Upcoming Quizzes", icon: FaBookOpen },
     { id: "history", label: "Quiz History", icon: FaClipboardList },
     { id: "liveQuiz", label: "Applied Quiz", icon: RiLiveFill },
+    { id: "feedback", label: "Feedback Reply", icon: RiFeedbackFill },
  
   ];
 
@@ -35,7 +36,7 @@ function Sidebar({ activeTab, setActiveTab }) {
       </nav>
 
       {/* Bottom navigation for mobile view */}
-      <div className="md:hidden fixed left-0 w-full bg-white shadow-lg z-50 flex justify-around items-center py-3">
+      <div className="md:hidden bottom-0 fixed left-0 w-full bg-white shadow-lg z-50 flex justify-around items-center py-3">
         {menuItems.map((item) => {
           const Icon = item.icon;
           const isActive = activeTab === item.id;

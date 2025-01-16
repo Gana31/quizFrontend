@@ -1,119 +1,113 @@
 import React, { useState, useEffect } from "react";
-import Quiz from '../Exam/QuizExam'
+import { useNavigate, useParams } from "react-router-dom";
+import Quiz from "../Exam/QuizExam";
+import apiClient from "../../Services/ApiConnector";
+import { removeToken } from "../../Slices/quizSlice";
+import { useDispatch } from "react-redux";
+
 const QuizExam = ({ setIsFullscreen }) => {
-  // const [isFullscreenMode, setIsFullscreenMode] = useState(false);
+  const navigate = useNavigate();
+  const dispatch = useDispatch();
+  const [quizData, setQuizData] = useState(null);
+  const [quizId, setQuizId] = useState(null); // New state for quizId
+  const { id } = useParams();
+  const enterFullscreen = () => {
+    const element = document.documentElement;
+    if (element.requestFullscreen) {
+      element.requestFullscreen();
+    } else if (element.mozRequestFullScreen) {
+      element.mozRequestFullScreen();
+    } else if (element.webkitRequestFullscreen) {
+      element.webkitRequestFullscreen();
+    } else if (element.msRequestFullscreen) {
+      element.msRequestFullscreen();
+    } else {
+      console.error("Fullscreen API not supported.");
+    }
+    setIsFullscreen && setIsFullscreen(true);  // Set fullscreen prop to true when entering fullscreen
+  };
 
-  // // Enter Fullscreen mode
-  // const enterFullscreen = () => {
-  //   const element = document.documentElement;
-  //   if (element.requestFullscreen) {
-  //     element.requestFullscreen();
-  //   } else if (element.mozRequestFullScreen) {
-  //     element.mozRequestFullScreen();
-  //   } else if (element.webkitRequestFullscreen) {
-  //     element.webkitRequestFullscreen();
-  //   } else if (element.msRequestFullscreen) {
-  //     element.msRequestFullscreen();
-  //   }
-  //   setIsFullscreenMode(true);
-  //   setIsFullscreen(true);
-  // };
+  const exitFullscreen = () => {
+    if (document.fullscreenElement) {
+      if (document.exitFullscreen) {
+        document.exitFullscreen();
+      } else if (document.mozCancelFullScreen) {
+        document.mozCancelFullScreen();
+      } else if (document.webkitExitFullscreen) {
+        document.webkitExitFullscreen();
+      } else if (document.msExitFullscreen) {
+        document.msExitFullscreen();
+      }
+      setIsFullscreen && setIsFullscreen(false); // Set fullscreen prop to false when exiting fullscreen
+    } else {
+      console.warn("Document is not in fullscreen mode.");
+    }
+  };
 
-  // // Exit Fullscreen mode
-  // const exitFullscreen = () => {
-  //   if (document.exitFullscreen) {
-  //     document.exitFullscreen();
-  //   } else if (document.mozCancelFullScreen) {
-  //     document.mozCancelFullScreen();
-  //   } else if (document.webkitExitFullscreen) {
-  //     document.webkitExitFullscreen();
-  //   } else if (document.msExitFullscreen) {
-  //     document.msExitFullscreen();
-  //   }
-  //   setIsFullscreenMode(false);
-  //   setIsFullscreen(false);
-  // };
+  const fetchQuizData = async () => {
+    try {
+      const response = await apiClient.post("/getNextQuestion", {
+        quizId: id, // Replace with dynamic quizId if needed
+      });
 
-  // useEffect(() => {
-  //   const handleFullscreenChange = () => {
-  //     if (!document.fullscreenElement) {
-  //       // Automatically re-enter fullscreen mode if exited
-  //       if (isFullscreenMode) {
-  //         enterFullscreen();
-  //       }
-  //     }
-  //   };
+      const quizId = response.data.data[0]?.quizId;
+      setQuizId(quizId);
+      
+      const transformedData = response.data.data.slice(1).flatMap((topic) =>
+        topic.questions.map((question) => ({
+          id: question._id,
+          topic: topic.topicName,
+          timeAllowed: 60,
+          question: question.title,
+          options: question.options,
+          quizId,
+          topicId: topic.topicId,
+        }))
+      );
 
-  //   const handleKeydown = (e) => {
-  //     // Allow only number keys
-  //     if (e.key >= "0" && e.key <= "9") return;
+      setQuizData(transformedData); // Set the transformed data
 
-  //     // Prevent Escape key from stopping fullscreen
-  //     if (e.key === "Escape") {
-  //       e.preventDefault();
-  //       e.stopPropagation();
-  //     }
+    } catch (error) {
+      console.error("Error fetching quiz data:", error);
+    }
+  };
 
-  //     // Block other system keys like Alt or Meta
-  //     const blockedKeys = ["Meta", "Alt", "Tab"];
-  //     if (blockedKeys.includes(e.key)) {
-  //       e.preventDefault();
-  //       e.stopPropagation();
-  //     }
-  //   };
+  useEffect(() => {
+    dispatch(removeToken());
+    enterFullscreen();
+    localStorage.setItem("quizActive", "true");
+    fetchQuizData();
 
-  //   const handleContextMenu = (e) => {
-  //     e.preventDefault(); // Disable right-click
-  //   };
+    return () => {
+      exitFullscreen();
+      localStorage.removeItem("quizActive");
+    };
+  }, []);
 
-  //   // Add event listeners
-  //   if (isFullscreenMode) {
-  //     document.addEventListener("fullscreenchange", handleFullscreenChange);
-  //     document.addEventListener("keydown", handleKeydown);
-  //     document.addEventListener("contextmenu", handleContextMenu);
-  //     document.documentElement.style.overflow = "hidden"; // Disable scrolling
-  //   }
+  useEffect(() => {
+    const quizActive = localStorage.getItem("quizActive");
+    if (!quizActive) {
+      navigate("/", { replace: true });
+    }
+  }, [navigate]);
 
-  //   return () => {
-  //     // Cleanup listeners
-  //     document.removeEventListener("fullscreenchange", handleFullscreenChange);
-  //     document.removeEventListener("keydown", handleKeydown);
-  //     document.removeEventListener("contextmenu", handleContextMenu);
-  //     document.documentElement.style.overflow = ""; // Restore scrolling
-  //   };
-  // }, [isFullscreenMode]);
+  const handleFinish = () => {
+    exitFullscreen();
+    setIsFullscreen(false); // Set fullscreen to false when user exits
+    navigate("/quiz", { replace: true });
+  };
 
   return (
-    // <div
-    //   className={`w-full h-screen flex items-center justify-center ${
-    //     isFullscreenMode ? "" : "bg-gray-100"
-    //   }`}
-    // >
-    //   <div className="w-full h-full flex flex-col items-center justify-center p-4">
-    //     {!isFullscreenMode && (
-    //       <button
-    //         onClick={enterFullscreen}
-    //         className="bg-blue-500 text-white px-4 py-2 rounded-md mb-4"
-    //       >
-    //         Enter Fullscreen
-    //       </button>
-    //     )}
-    //     <div className="w-full flex justify-center">
-    //       <h1 className="text-3xl font-semibold mb-4">Quiz Exam</h1>
-    //     </div>
-    //     <div className="flex flex-col items-center">
-    //       <button
-    //         onClick={exitFullscreen}
-    //         className="bg-red-500 text-white px-4 py-2 rounded-md"
-    //       >
-    //         Exit Fullscreen
-    //       </button>
-    //     </div>
-    //   </div>
-    // </div>
-    
-    <div>
-      <Quiz/>
+    <div className="relative w-[100vw] h-screen bg-gray-100">
+      <button
+        onClick={handleFinish}
+        className="absolute top-4 right-4 bg-red-500 text-white px-4 py-2 rounded-md shadow-lg"
+      >
+        Finish
+      </button>
+      <div className="flex items-center justify-center w-full h-full">
+        <Quiz quizData={quizData} quizId={quizId} />
+      </div>
     </div>
   );
 };

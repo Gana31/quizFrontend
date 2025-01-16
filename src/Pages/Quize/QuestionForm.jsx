@@ -11,7 +11,7 @@ function QuestionForm({ onSubmit, onClose, editingQuestion, selectedTopic }) {
 
   const totalQuestions = selectedTopic?.questions?.length || 0;
   const maxQuestions = selectedTopic?.maxQuestions || 0;
-    // console.log(selectedTopic)
+    
   useEffect(() => {
     if (editingQuestion) {
       setQuestion(editingQuestion.title);
@@ -25,11 +25,10 @@ function QuestionForm({ onSubmit, onClose, editingQuestion, selectedTopic }) {
   const handleSubmit = (e) => {
     e.preventDefault();
 
-    if (totalQuestions >= maxQuestions) {
-      setErrorMessage('Maximum number of questions reached.');
+    if (!editingQuestion && totalQuestions >= maxQuestions) {
+      setErrorMessage('Maximum number of questions reached. You cannot add more questions.');
       return;
     }
-
 
     if (selectedSets.length > 2) {
       setErrorMessage('You can only select up to 2 sets.');
@@ -78,7 +77,7 @@ function QuestionForm({ onSubmit, onClose, editingQuestion, selectedTopic }) {
             <FaTimes size={24} />
           </button>
         </div>
-        {totalQuestions >= maxQuestions ? (
+        {totalQuestions >= maxQuestions && !editingQuestion ? (
           <div className="p-6 text-center">
             <p className="text-red-600 font-medium">
               You have reached the maximum number of questions for this topic ({maxQuestions}).
@@ -91,21 +90,21 @@ function QuestionForm({ onSubmit, onClose, editingQuestion, selectedTopic }) {
             </button>
           </div>
         ) : (
-          <form onSubmit={handleSubmit} className="p-6 space-y-6">
+          <form onSubmit={handleSubmit} className="p-2 space-y-2 md:p-6 md:space-y-6">
             {errorMessage && <p className="text-red-600">{errorMessage}</p>}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-xs md:text-sm font-medium text-gray-700 mb-1">
                 Question
               </label>
               <input
                 type="text"
                 value={question}
                 onChange={(e) => setQuestion(e.target.value)}
-                className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="w-full px-2 py-1 md:px-4 md:py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 required
               />
             </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:gap-4 gap-1">
               {options.map((option, index) => (
                 <div key={index}>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -119,20 +118,20 @@ function QuestionForm({ onSubmit, onClose, editingQuestion, selectedTopic }) {
                       newOptions[index] = e.target.value;
                       setOptions(newOptions);
                     }}
-                    className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    className="w-full px-4  py-1 md:py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                     required
                   />
                 </div>
               ))}
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-xs md:text-sm font-medium text-gray-700 mb-1">
                 Correct Answer
               </label>
               <select
                 value={correctAnswer}
                 onChange={(e) => setCorrectAnswer(e.target.value)}
-                className="w-full sm:w-auto px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="w-full sm:w-auto px-4 py-1 md:py-2 text-sm  border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 required
               >
                 <option value="">Select correct answer</option>
@@ -144,7 +143,7 @@ function QuestionForm({ onSubmit, onClose, editingQuestion, selectedTopic }) {
               </select>
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sx md:text-sm font-medium text-gray-700 mb-1">
                 Explanation Link (YouTube)
               </label>
               <input
@@ -152,7 +151,7 @@ function QuestionForm({ onSubmit, onClose, editingQuestion, selectedTopic }) {
                 value={explanationLink}
                 onChange={(e) => setExplanationLink(e.target.value)}
                 placeholder="https://www.youtube.com/..."
-                className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="w-full px-4 py-1 md:py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               />
             </div>
             <div>
@@ -164,7 +163,7 @@ function QuestionForm({ onSubmit, onClose, editingQuestion, selectedTopic }) {
                   <div
                     key={set}
                     onClick={() => handleSetSelection(set)}
-                    className={`cursor-pointer p-2 border rounded-lg ${
+                    className={`cursor-pointer text-xs md:text-base p-2 border rounded-lg ${
                       selectedSets.includes(set) ? 'bg-purple-600 text-white' : 'bg-gray-200 text-gray-700'
                     }`}
                   >

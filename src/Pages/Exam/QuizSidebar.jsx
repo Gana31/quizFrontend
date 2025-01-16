@@ -1,11 +1,10 @@
-import React from 'react';
-import { questions } from './QuizExam';
+import React from "react";
 
-const QuestionSidebar = ({ answers }) => {
+const QuestionSidebar = ({ answers, questions }) => {
   const getQuestionStatus = (index) => {
-    if (index >= answers.length) return 'unvisited';
-    if (answers[index].selectedOption === null) return 'skipped';
-    return 'answered';
+    if (index >= answers.length) return "unvisited";
+    if (answers[index].selectedOption === null) return "skipped";
+    return "answered";
   };
 
   const getTopicStats = () => {
@@ -16,7 +15,7 @@ const QuestionSidebar = ({ answers }) => {
         stats[q.topic] = {
           total: 0,
           attempted: 0,
-          totalTime: 0
+          totalTime: 0,
         };
       }
 
@@ -64,9 +63,9 @@ const QuestionSidebar = ({ answers }) => {
                 const questionIndex = questions.findIndex(que => que.id === q.id);
                 const status = getQuestionStatus(questionIndex);
                 const statusColors = {
-                  unvisited: 'bg-gray-200',
-                  skipped: 'bg-red-200',
-                  answered: 'bg-green-200'
+                  unvisited: "bg-gray-200",
+                  skipped: "bg-red-200",
+                  answered: "bg-green-200",
                 };
 
                 return (
@@ -74,9 +73,7 @@ const QuestionSidebar = ({ answers }) => {
                     key={q.id}
                     className={`${statusColors[status]} p-2 rounded-lg flex items-center justify-center cursor-pointer transition-colors`}
                   >
-                    <span className="font-medium text-gray-700">
-                      {questionIndex + 1}
-                    </span>
+                    <span className="font-medium text-gray-700">{questionIndex + 1}</span>
                   </div>
                 );
               })}

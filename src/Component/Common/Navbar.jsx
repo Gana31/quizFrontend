@@ -9,7 +9,7 @@ import { logout } from '../../Services/Operations/authoperation';
 const Navbar = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
-  const { accessToken } = useSelector((state) => state.auth);
+  const { accessToken,user } = useSelector((state) => state.auth);
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
@@ -57,12 +57,15 @@ const Navbar = () => {
         <NavLink to="/about" className={linkClasses}>
           About
         </NavLink>
-        <NavLink to="/contact" className={linkClasses}>
-          Contact
-        </NavLink>
+
+    
         <NavLink to="/quiz" className={linkClasses}>
           Quiz
         </NavLink>
+        {accessToken && user.account_type == "Teacher" &&  
+       ( <NavLink to="/feedback" className={linkClasses}>
+        Feedback
+      </NavLink>)}
       </div>
 
       {/* Buttons and Hamburger Menu */}
@@ -144,12 +147,14 @@ const Navbar = () => {
           <NavLink to="/about" onClick={toggleMenu} className={mobileLinkClasses}>
             About
           </NavLink>
-          <NavLink to="/contact" onClick={toggleMenu} className={mobileLinkClasses}>
-            Contact
-          </NavLink>
+         
           <NavLink to="/quiz" onClick={toggleMenu} className={mobileLinkClasses}>
             Quiz
           </NavLink>
+          {accessToken && user.account_type == "Teacher" &&  
+        <NavLink to="/feedback" className={linkClasses}>
+          Feedback
+        </NavLink>}
         </div>
         {/* Buttons */}
         {!accessToken && (

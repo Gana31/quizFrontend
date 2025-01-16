@@ -1,92 +1,138 @@
-import { useState, useEffect } from 'react';
-import { FiClock, FiBookOpen } from 'react-icons/fi';
-import QuestionSidebar from './QuizSidebar';
-import Result from './Result';
+import React, { useState, useEffect } from "react";
+import { FiClock, FiBookOpen } from "react-icons/fi";
+import QuestionSidebar from "./QuizSidebar";
+import Result from "./Result"; // Import the Result page component
+import apiClient from "../../Services/ApiConnector";
+import { toast } from "react-toastify";
+import { setLoading } from "../../Slices/authSlice";
+import { useDispatch } from "react-redux";
 
-export const questions = [
-    {
-      id: 1,
-      topic: "Algebra",
-      timeAllowed: 45,
-      question: "Solve for x: 2x + 5 = 13",
-      options: ["x = 3", "x = 4", "x = 5", "x = 6"],
-      correctAnswer: 1
-    },
-    {
-      id: 2,
-      topic: "Geometry",
-      timeAllowed: 60,
-      question: "What is the area of a circle with radius 5 units?",
-      options: ["25π", "10π", "15π", "20π"],
-      correctAnswer: 0
-    },
-    {
-      id: 3,
-      topic: "Speed",
-      timeAllowed: 30,
-      question: "A car travels 120 km in 2 hours. What is its speed?",
-      options: ["50 km/h", "60 km/h", "70 km/h", "80 km/h"],
-      correctAnswer: 1
-    },
-    {
-      id: 4,
-      topic: "Algebra",
-      timeAllowed: 45,
-      question: "Simplify: (x² + 2x) + (3x² - x)",
-      options: ["4x² + x", "4x² - x", "4x² + 3x", "3x² + x"],
-      correctAnswer: 0
-    },
-    {
-      id: 5,
-      topic: "Geometry",
-      timeAllowed: 50,
-      question: "What is the sum of angles in a triangle?",
-      options: ["90°", "180°", "270°", "360°"],
-      correctAnswer: 1
-    }
-  ];
-
-export default function Quiz() {
+export default function Quiz({ quizData }) {
+  const [questions, setQuestions] = useState(quizData || []);
   const [currentQuestion, setCurrentQuestion] = useState(0);
-  const [timeLeft, setTimeLeft] = useState(questions[0].timeAllowed);
-  const [answers, setAnswers] = useState([]);
+  const [timeLeft, setTimeLeft] = useState(
+    questions.length > 0 ? questions[0].timeAllowed : 0
+  );
+  const [answers, setAnswers] = useState([]); // Tracks user answers
   const [showResults, setShowResults] = useState(false);
+  const dispatch = useDispatch();
+  
+  useEffect(() => {
+    if (quizData && quizData.length > 0) {
+      setQuestions(quizData);
+      setTimeLeft(quizData[0].timeAllowed); // Set initial time for the first question
+    }
+  }, [quizData]);
 
   useEffect(() => {
     if (timeLeft > 0 && !showResults) {
       const timer = setTimeout(() => setTimeLeft(timeLeft - 1), 1000);
       return () => clearTimeout(timer);
-    } else if (timeLeft === 0) {
-      handleNextQuestion(null);
+    } else if (timeLeft === 0 && currentQuestion < questions.length - 1) {
+      handleNextQuestion(null); // Auto-advance when time is up
+    } else if (timeLeft === 0 && currentQuestion === questions.length - 1) {
+      // Submit answers for the last question when time runs out
+      const newAnswer = {
+        questionId: questions[currentQuestion]?.id,
+        selectedOption: null, // If time is up and no answer was selected
+      };
+      setAnswers((prevAnswers) => [...prevAnswers, newAnswer]);
+      submitAnswersToBackend([...answers, newAnswer]); // Submit the answers
+      setShowResults(true); // Show results after the quiz ends
     }
-  }, [timeLeft, showResults]);
+  }, [timeLeft, showResults, currentQuestion, questions]);
 
-  const handleNextQuestion = (selectedOption) => {
+  const handleNextQuestion = async (selectedOption) => {
     const newAnswer = {
-      questionId: questions[currentQuestion].id,
-      selectedOption
+      questionId: questions[currentQuestion]?.id,
+      selectedOption: selectedOption === null ? null : selectedOption,
     };
-
-    setAnswers([...answers, newAnswer]);
-
+  
+    // Immediately update the answers state with the current answer
+    setAnswers((prevAnswers) => [...prevAnswers, newAnswer]);
+  
+    // Move to the next question
     if (currentQuestion < questions.length - 1) {
-      setCurrentQuestion(currentQuestion + 1);
-      setTimeLeft(questions[currentQuestion + 1].timeAllowed);
+      setCurrentQuestion((prevCurrentQuestion) => prevCurrentQuestion + 1);
+      setTimeLeft(questions[currentQuestion + 1]?.timeAllowed || 0); // Set timer for next question
     } else {
-      setShowResults(true);
+      // Call API to save answers after the last question
+      await submitAnswersToBackend([...answers, newAnswer]);
+      setShowResults(true); // Show results after the quiz ends
     }
   };
 
-  if (showResults) {
-    return <Result answers={answers} />;
+  const submitAnswersToBackend = async (allAnswers) => {
+    try {
+      const payload = {
+        quizId: questions[0]?.quizId, // Assuming quizId is available in questions
+        topics: questions.reduce((acc, q, index) => {
+          const topicIndex = acc.findIndex((topic) => topic.topicId === q.topicId);
+  
+          const answerObj = {
+            questionId: q.id,
+            questionTitle: q.question,
+            selectedOption: allAnswers[index]?.selectedOption ?? null,
+            options: q.options,
+          };
+  
+          if (topicIndex === -1) {
+            acc.push({
+              topicName: q.topic,
+              topicId: q.topicId,
+              questions: [answerObj],
+            });
+          } else {
+            acc[topicIndex].questions.push(answerObj);
+          }
+  
+          return acc;
+        }, []),
+      };
+  
+      const response = await apiClient.post("/answersubmit", payload);
+  
+      if (response.data.success) {
+        toast.success("Answers submitted successfully!");
+      } else {
+        toast.error(response.data.message || "Failed to submit answers.");
+      }
+    } catch (error) {
+      toast.error(error.response?.data?.message || "An error occurred while submitting answers.");
+      console.error("Error submitting answers:", error);
+    } finally {
+      dispatch(setLoading(false)); // Stop the loading spinner
+    }
+  };
+
+  const handleExitQuiz = () => {
+    // Submit answers for any unanswered questions (set to null)
+    const allAnswers = questions.map((q, index) => ({
+      questionId: q.id,
+      selectedOption: answers[index]?.selectedOption ?? null, // Use null if the answer doesn't exist
+    }));
+
+    // Submit all answers (including null values for unanswered questions)
+    submitAnswersToBackend(allAnswers);
+    setShowResults(true); // Show results after exit
+  };
+
+  // Wait for questions to load
+  if (questions.length === 0) {
+    return <div>Loading questions...</div>;
   }
 
   const currentQ = questions[currentQuestion];
 
+  // If all questions are answered or skipped, show the result page
+  if (showResults) {
+    return <Result answers={answers} questions={questions} handleExitQuiz={handleExitQuiz} />;
+  }
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-50 to-blue-50 p-4 flex items-center justify-center">
+    <div className="min-h-screen w-full bg-gradient-to-br from-purple-50 to-blue-50 p-4 flex items-center justify-center">
       <div className="flex w-full max-w-6xl">
-        <QuestionSidebar answers={answers} />
+        <QuestionSidebar answers={answers} questions={questions} />
         <div className="bg-white rounded-2xl shadow-xl p-8 flex-1">
           <div className="flex flex-wrap gap-4 justify-between items-center mb-8">
             <div className="space-y-2">
@@ -100,7 +146,11 @@ export default function Quiz() {
             </div>
             <div className="flex items-center gap-2">
               <FiClock className="text-purple-600" />
-              <span className={`font-bold ${timeLeft <= 10 ? 'text-red-500' : 'text-purple-600'}`}>
+              <span
+                className={`font-bold ${
+                  timeLeft <= 10 ? "text-red-500" : "text-purple-600"
+                }`}
+              >
                 {timeLeft}s
               </span>
             </div>
@@ -123,12 +173,20 @@ export default function Quiz() {
 
           <div className="flex justify-end">
             <button
-              onClick={() => handleNextQuestion(null)}
+              onClick={() => handleNextQuestion(null)} // Skip the question
               className="bg-gray-200 text-gray-700 py-2 px-6 rounded-lg hover:bg-gray-300 transition-colors"
             >
               Skip
             </button>
           </div>
+
+          {/* Exit Button to Exit the Quiz */}
+          <button
+            onClick={handleExitQuiz}
+            className="absolute top-4 right-4 bg-red-500 text-white px-4 py-2 rounded-md shadow-lg"
+          >
+            Exit
+          </button>
         </div>
       </div>
     </div>

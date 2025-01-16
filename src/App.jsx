@@ -12,6 +12,8 @@ import StudentQuizMain from "./Pages/StudentPage/StudentQuizMain";
 import QuizExam from "./Pages/StudentPage/QuizExam";
 import { useState } from "react";
 import OTPForm from "./Component/OtpPage";
+import TeacherFeedback from "./Pages/Feedback/TeacherFeedback";
+import UserFeedback from "./Pages/Feedback/UserFeedback";
 
 function App() {
   const { accessToken, user } = useSelector((state) => state.auth); // Assuming user info is in `auth`
@@ -34,10 +36,10 @@ function App() {
 
         <Route path="/" element={<HomePage />} />
         <Route path="/about" element={<About />} />
-        <Route path="/s" element={<StudentQuizMain />} />
-        <Route path="/o" element={<OTPForm />} />
+   
+        <Route path="/otp/:id" element={<OTPForm />} />
         <Route
-          path="/q"
+          path="/exam/:id"
           element={<QuizExam setIsFullscreen={setIsFullscreen} />}
         /> {/* Pass the fullscreen setter to QuizExam */}
         <Route path="*" element={<NotFound />} />
@@ -55,6 +57,21 @@ function App() {
             />
           }
         />
+         <Route
+          path="/feedback"
+          element={
+            <ProtectedRoute
+              element={
+                user?.account_type === "Teacher" ? (
+                  <TeacherFeedback />
+                ) : (
+                  <UserFeedback/>
+                )
+              }
+            />
+          }
+        />
+
       </Routes>
       {isFullscreen ? null : <Footer />} {/* Hide Footer in fullscreen */}
     </>
