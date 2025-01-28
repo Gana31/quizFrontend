@@ -14,6 +14,8 @@ import { useState } from "react";
 import OTPForm from "./Component/OtpPage";
 import TeacherFeedback from "./Pages/Feedback/TeacherFeedback";
 import UserFeedback from "./Pages/Feedback/UserFeedback";
+import AdminResourceCreate from "./Pages/Admin Resoures/AdminResourceCreate";
+import StudentResourceMain from "./Pages/StudentResources/StudentResourceMain";
 
 function App() {
   const { accessToken, user } = useSelector((state) => state.auth); // Assuming user info is in `auth`
@@ -66,6 +68,20 @@ function App() {
                   <TeacherFeedback />
                 ) : (
                   <UserFeedback/>
+                )
+              }
+            />
+          }
+        />
+         <Route
+          path="/resource"
+          element={
+            <ProtectedRoute
+              element={
+                user?.account_type === "Teacher" ? (
+                  <AdminResourceCreate />
+                ) : (
+                  <StudentResourceMain/>
                 )
               }
             />

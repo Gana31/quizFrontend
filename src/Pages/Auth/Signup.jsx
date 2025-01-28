@@ -89,7 +89,7 @@ function SignupPage({ initialForm }) {
                 }`}
               onClick={() => handleAccountTypeChange("Teacher")}
             >
-              Teacher
+              Content Manager
             </button>
             <button
               type="button"

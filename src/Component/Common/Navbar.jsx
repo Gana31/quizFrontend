@@ -58,10 +58,14 @@ const Navbar = () => {
           About
         </NavLink>
 
-    
+        
         <NavLink to="/quiz" className={linkClasses}>
           Quiz
         </NavLink>
+        <NavLink to="/resource" className={linkClasses}>
+        Resource
+        </NavLink>
+
         {accessToken && user.account_type == "Teacher" &&  
        ( <NavLink to="/feedback" className={linkClasses}>
         Feedback

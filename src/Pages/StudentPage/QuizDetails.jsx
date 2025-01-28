@@ -28,6 +28,7 @@ function QuizDetails({ quiz, onClose }) {
         correctAnswer: currentQuestion.correctAnswer,
         selectedAnswer: currentQuestion.userAnswer,
         isCorrect: currentQuestion.isCorrect,
+        explanationLink : currentQuestion.explanationLink,
       },
     };
 
@@ -146,7 +147,7 @@ function QuizDetails({ quiz, onClose }) {
                       {/* Explanation and Feedback */}
                       <div className="flex items-center justify-between mt-4">
                         <a
-                          href={question.explanationVideo}
+                          href={question.explanationLink}
                           target="_blank"
                           rel="noopener noreferrer"
                           className="text-blue-600 hover:text-blue-800 text-sm md:text-base flex items-center"
